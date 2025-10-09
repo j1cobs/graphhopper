@@ -1,5 +1,20 @@
 package com.graphhopper.isochrone.algorithm;
 
+import static com.graphhopper.json.Statement.If;
+import static com.graphhopper.json.Statement.Op.MULTIPLY;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.graphhopper.json.Statement;
 import com.graphhopper.routing.ev.BooleanEncodedValue;
 import com.graphhopper.routing.ev.DecimalEncodedValue;
@@ -18,17 +33,6 @@ import com.graphhopper.util.CustomModel;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static com.graphhopper.json.Statement.If;
-import static com.graphhopper.json.Statement.Op.MULTIPLY;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Peter Karich
@@ -382,5 +386,113 @@ public class ShortestPathTreeTest {
         }
         throw new RuntimeException("nope");
     }
+
+
+
+ // Vérifie que la limite de temps empêche l'exploration au-delà du temps
+
+@Test
+void testTimeLimitRespected() {
+
+    BaseGraph g = new BaseGraph.Builder(encodingManager).create();
+    
+    EdgeIteratorState edge01 = g.edge(0, 1).setDistance(1000);
+    GHUtility.setSpeed(50, true, false, accessEnc, speedEnc, edge01);
+    
+    EdgeIteratorState edge12 = g.edge(1, 2).setDistance(1000);
+    GHUtility.setSpeed(50, true, false, accessEnc, speedEnc, edge12);
+    
+    Weighting w = createWeighting();
+    ShortestPathTree spt = new ShortestPathTree(g, w, false, TraversalMode.NODE_BASED);
+    spt.setTimeLimit(20000);
+    
+    List<ShortestPathTree.IsoLabel> labels = new ArrayList<>();
+    spt.search(0, labels::add);
+
+    assertTrue(labels.size() >= 1, "Au moins le node de départ doit être visité");
+    assertEquals(0, labels.get(0).node);
+    
+    g.close();
+}
+
+
+ // Vérifie que la limite de distance borne correctement le graphe
+
+@Test
+void testDistanceLimitRespected() {
+    BaseGraph g = new BaseGraph.Builder(encodingManager).create();
+    
+    EdgeIteratorState edge01 = g.edge(0, 1).setDistance(1000);
+    GHUtility.setSpeed(50, true, false, accessEnc, speedEnc, edge01);
+    
+    EdgeIteratorState edge12 = g.edge(1, 2).setDistance(1000);
+    GHUtility.setSpeed(50, true, false, accessEnc, speedEnc, edge12);
+    
+    Weighting w = createWeighting();
+    ShortestPathTree spt = new ShortestPathTree(g, w, false, TraversalMode.NODE_BASED);
+    spt.setDistanceLimit(1500.0);
+    
+    List<ShortestPathTree.IsoLabel> labels = new ArrayList<>();
+    spt.search(0, labels::add);
+    
+    assertEquals(2, labels.size(), "La limite de distance empêche d'atteindre le node 2");
+    assertEquals(0, labels.get(0).node);
+    assertEquals(1, labels.get(1).node);
+    
+    g.close();
+}
+
+// Vérifie que la limite de poids préfère la route la plus rapide lorsqu'il existe deux arêtes parallèles
+
+@Test
+void testWeightLimitPrefersFastEdge() {
+    BaseGraph g = new BaseGraph.Builder(encodingManager).create();
+    
+    EdgeIteratorState fastEdge = g.edge(0, 1).setDistance(1000);
+    GHUtility.setSpeed(100, true, false, accessEnc, speedEnc, fastEdge);
+    
+    EdgeIteratorState slowEdge = g.edge(0, 1).setDistance(1000);
+    GHUtility.setSpeed(50, true, false, accessEnc, speedEnc, slowEdge);
+    
+    Weighting w = createWeighting();
+    ShortestPathTree spt = new ShortestPathTree(g, w, false, TraversalMode.NODE_BASED);
+    spt.setWeightLimit(50.0);
+    
+    List<ShortestPathTree.IsoLabel> labels = new ArrayList<>();
+    spt.search(0, labels::add);
+    
+    ShortestPathTree.IsoLabel label1 = labels.stream()
+            .filter(l -> l.node == 1)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Le node 1 devrait être atteint"));
+
+    assertTrue(label1.weight <= 50.0, "La route rapide doit être conservée sous la limite");
+    
+    g.close();
+}
+
+// Vérifie que getIsochroneEdges renvoie exactement une arête lorsque le seuil est franchi entre deux nodes
+
+@Test
+void testIsochroneEdges() {
+    BaseGraph g = new BaseGraph.Builder(encodingManager).create();
+    
+    EdgeIteratorState edge01 = g.edge(0, 1).setDistance(1000);
+    GHUtility.setSpeed(50, true, false, accessEnc, speedEnc, edge01);
+    
+    EdgeIteratorState edge12 = g.edge(1, 2).setDistance(1000);
+    GHUtility.setSpeed(50, true, false, accessEnc, speedEnc, edge12);
+    
+    Weighting w = createWeighting();
+    ShortestPathTree spt = new ShortestPathTree(g, w, false, TraversalMode.NODE_BASED);
+    spt.setDistanceLimit(10_000);
+    spt.search(0, l -> {});
+    
+    ArrayList<ShortestPathTree.IsoLabel> edges = spt.getIsochroneEdges(1500);
+    assertEquals(1, edges.size(), "Une seule arête franchit le seuil de 1500m");
+    
+    g.close();
+}
+
 
 }
