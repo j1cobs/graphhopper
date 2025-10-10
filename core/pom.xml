@@ -132,10 +132,12 @@
                     <version>1.15.3</version>
                     <configuration>
                         <targetClasses>
-                            <param>com.graphhopper.isochrone.algorithm.ShortestPathTree</param>
+                            <param>com.graphhopper.isochrone.algorithm.ShortestPathTree*</param>
+                            <param>com.graphhopper.util.GHUtility*</param>
                         </targetClasses>
                         <targetTests>
                             <param>com.graphhopper.isochrone.algorithm.*Test</param>
+                            <param>com.graphhopper.util.*Test</param>
                         </targetTests>
                     </configuration>
                     <dependencies>
