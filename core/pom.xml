@@ -125,6 +125,28 @@
         <pluginManagement>
             <plugins>
                 <!-- create jar with test classes to be reused in other projects -->
+
+                <plugin>
+                    <groupId>org.pitest</groupId>
+                    <artifactId>pitest-maven</artifactId>
+                    <version>1.15.3</version>
+                    <configuration>
+                        <targetClasses>
+                            <param>com.graphhopper.isochrone.algorithm.ShortestPathTree</param>
+                        </targetClasses>
+                        <targetTests>
+                            <param>com.graphhopper.isochrone.algorithm.*Test</param>
+                        </targetTests>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.pitest</groupId>
+                            <artifactId>pitest-junit5-plugin</artifactId>
+                            <version>1.2.1</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
