@@ -31,6 +31,7 @@ import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.BaseGraph;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
+import com.github.javafaker.Faker;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -243,6 +244,25 @@ public class GHUtilityTest {
         // 4: Invalid edge (NO_EDGE constant), return adjNode parameter
         assertEquals(10, GHUtility.getAdjNode(graph, EdgeIterator.NO_EDGE, 10),
             "NO_EDGE should return adjNode parameter 10");
+    }
+
+    @Test
+    public void testGetAdjNodeWithRandomInvalidEdges() {
+        Faker faker = new Faker();
+        BaseGraph graph = new BaseGraph.Builder(1).create();
         
+        // Create a simple graph with just 3 nodes
+        graph.getNodeAccess().setNode(0, 0.0, 0.0);
+        graph.getNodeAccess().setNode(1, 0.1, 0.1);
+        graph.getNodeAccess().setNode(2, 0.2, 0.2);
+        
+        // Test with random invalid edge IDs
+        for (int i = 0; i < 5; i++) {
+            int invalidEdgeId = faker.number().numberBetween(-1000, -1);
+            int randomNodeId = faker.number().numberBetween(0, 3);
+            
+            assertEquals(randomNodeId, GHUtility.getAdjNode(graph, invalidEdgeId, randomNodeId),
+                "Invalid edge " + invalidEdgeId + " should return adjNode parameter " + randomNodeId);
+        }
     }
 }
