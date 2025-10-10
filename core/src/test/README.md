@@ -151,8 +151,7 @@ La couverture de mutation est très basse avant l'ajout de test, soit à 6% (15/
 - 3 mutants: Negated conditional sur les conditions !refNodes.equals(pathNodes), path.getGraph() != refPath.getGraph() et !pathsEqualExceptOneEdge(path.getGraph(), refNodes, pathNodes).  Notre test élimine ces mutants étant donné que nous avons testé le cas où les noeuds des deux chemins sont les mêmes et également lorsqu'ils sont différents.  Nous avons testé des scénarios où les graphes étaient les mêmes.  
 - 1 mutant: Remplacement du retour de la méthode par une liste vide et puisque nous testons la taille et le contenu de la liste, notre test élimine ce mutant.    
 
-
-Les autres mutants éliminés sont probablement créés par des utilisations de fonction autre dans les fonctions pour lesquelles nous avons ajoutés des tests.
+Les autres mutants éliminés sont probablement créés par des utilisations de fonction autre dans les fonctions pour lesquelles nous avons ajoutés des tests.  Il est difficile d'analyser tous les mutants éliminés étant donné que ceux-ci étaient nombreux.  J'ai donc analyser les mutants directement éliminés dans les fonctions sous tests.
 
 ## Java Faker
 Le test ajouté afin d'intégrer java-faker est testGetAdjNodeWithRandomInvalidEdges() pour la classe GHUtility.  Ce test nous permet de tester différentes valeurs arêtes invalides afind de s'assurer que peu importe la valeur de l'identifiant de l'arête utilisée, elle sera invalide étant donné qu'on prend une valeur entre -1000 et -1.  De plus, nous testons ce comportement à 5 reprises pour n'importe quel des 3 noeuds créés tirés au hasard grâce à faker encore une fois.  Les fakers utilisés nous permettent donc de tirer un noeud au hasard et de créer un identifiant d'arête invalide de façon aléatoire.
