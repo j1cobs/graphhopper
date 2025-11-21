@@ -130,6 +130,21 @@
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
                     <version>1.21.1</version>
+                    <configuration>
+                        <jvmArgs>
+                            <value>-Xmx190m</value>
+                            <value>-Xms190m</value>
+                            <value>-Duser.language=en</value>
+                            <value>--add-opens=java.base/java.lang=ALL-UNNAMED</value>
+                            <value>--add-opens=java.base/java.util=ALL-UNNAMED</value>
+                        </jvmArgs>
+                        <targetClasses>
+                            <param>com.graphhopper.*</param>
+                        </targetClasses>
+                        <targetTests>
+                            <param>com.graphhopper.*</param>
+                        </targetTests>
+                    </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>org.pitest</groupId>
