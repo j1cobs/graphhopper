@@ -85,6 +85,6 @@ jobs:
       - name: Commit updated score
         if: matrix.java-version == '21' && success()
         run: |
-          SCORE_FILE=".github/mutation-score.txt"
+          SCORE_FILE=".github/mutation_coverage.txt"
           git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' add "$SCORE_FILE"
           git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m "Update mutation score baseline" && git push || echo "No changes to commit"
