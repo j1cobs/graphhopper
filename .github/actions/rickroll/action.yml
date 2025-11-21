@@ -11,4 +11,7 @@ runs:
     - name: Rickroll
       shell: bash
       run: |
-        curl -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh
+        echo "🎵 NEVER GONNA GIVE YOU UP 🎵"
+        timeout 30s curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash || true
+        echo ""
+        echo "🎵 Tests failed! You've been rickrolled! 🎵"
