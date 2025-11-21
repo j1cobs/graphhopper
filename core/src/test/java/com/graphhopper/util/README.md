@@ -13,7 +13,7 @@ Nous avons choisi de modifier le fichier build.yml directement étant donné que
 
 4. Le quatrième pas d'exécution permet de changer le score précédent dans le fichier .github/mutation_coverage.txt pour le score actuel.  Cette étape est seulement exécuté lorsque l'étape précedente a réussie son exécution, une condition cruciale afin de ne pas changer le score précédent pour un score plus bas.  On veut garder le score le plus haut.  Lorsque les conditions sont satisfaites, on efface le score précédent et le remplace par le score actuel puisqu'on n'a pas besoin de garder un historique des scores de mutations.
 
-5. La dernière étape consiste à pousser les changements sur Github d'une façon relativement formattée afin de pouvoir suivre les changements de manière claire.  Lorsque le fichier n'a pas modifié, cette étape écrit un message disant qu'aucun changement ne doit être poussé.
+5. La dernière étape consiste à pousser les changements sur Github d'une façon relativement formattée afin de pouvoir suivre les changements de manière claire.  Cette étape est elle aussi bloquée par la condition de succès des étapes antérieures.  Lorsque le fichier n'a pas modifié, cette étape écrit un message disant qu'aucun changement ne doit être poussé.
 
 ### Validation de ce changement
 
@@ -27,6 +27,12 @@ Error: Process completed with exit code 1.
 ```
 
 Ainsi, ce test nous assure que notre ajout au Github Actions permet de détecter une réduction du score de mutation.  Nous avons également pu tester le cas lors duquel le score reste stable et nous avons pu remarquer que le workflow termine sans problèmes.  Le dernier cas testé est celui lorsque le score de mutation augmente que nous avons exécuté en modifiant directement le score de mutation dans le fichier .github/mutation_coverage.txt par une valeur inférieur à la valeur actuelle.
+
+```
+Previous mutation score: 25%
+Current mutation score: 27%
+Mutation score maintained or improved
+```
 
 ## PathMerger avec Mockito
 
