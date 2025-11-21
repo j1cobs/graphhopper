@@ -130,14 +130,6 @@
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
                     <version>1.21.1</version>
-                    <configuration>
-                        <targetClasses>
-                            <param>com.graphhopper.*</param>
-                        </targetClasses>
-                        <targetTests>
-                            <param>com.graphhopper.*Test</param>
-                        </targetTests>
-                    </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>org.pitest</groupId>
