@@ -11,4 +11,4 @@ runs:
     - name: Rickroll
       shell: bash
       run: |
-        curl -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash
+        curl "ascii.live/rick"
