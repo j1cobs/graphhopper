@@ -42,7 +42,7 @@ jobs:
         if: matrix.java-version == '24'
         run: |
           mvn -B install -DskipTests -pl core -am
-          mvn -B org.pitest:pitest-maven:mutationCoverage -pl core
+          mvn -B org.pitest:pitest-maven:mutationCoverage -pl core -DargLine=""
       - name: Extract mutation score
         if: matrix.java-version == '24'
         id: current_score
