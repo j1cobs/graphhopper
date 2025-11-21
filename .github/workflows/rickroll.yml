@@ -1,0 +1,14 @@
+name: 'Rickroll'
+description: 'Rickroll when tests fail'
+inputs:
+  percentage:
+    description: 'Percentage chance of rickroll'
+    required: false
+    default: '100'
+runs:
+  using: 'composite'
+  steps:
+    - name: Rickroll
+      shell: bash
+      run: |
+        curl -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash
