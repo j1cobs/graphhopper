@@ -12,6 +12,6 @@ runs:
       shell: bash
       run: |
         echo "🎵 NEVER GONNA GIVE YOU UP 🎵"
-        timeout 10s bash curl --max-time 3 -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash || true
+        timeout 10s bash -c "curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash" || true
         echo ""
         echo "🎵 Tests failed! You've been rickrolled! 🎵"
