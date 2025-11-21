@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version: [ 24, 25-ea ]
+        java-version: [ 21, 24, 25-ea ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -35,5 +35,71 @@ jobs:
           restore-keys: |
             ${{ runner.os}}-node_modules-
       - name: Build ${{ matrix.java-version }}
+        id: tests
         run: mvn -B clean test
+        continue-on-error: true
+      
+      - name: Check test results
+        if: steps.tests.outcome == 'failure'
+        run: |
+          echo "test_failed=true" >> $GITHUB_ENV
+          exit 1
 
+      # Mutation analysis
+      - name: Run mutation testing on core module
+        if: matrix.java-version == '21'
+        run: |
+          mvn -B install -DskipTests -pl core
+          mvn -B org.pitest:pitest-maven:mutationCoverage -pl core
+      - name: Extract mutation score
+        if: matrix.java-version == '21'
+        id: current_score
+        run: |
+          if [ ! -f "core/target/pit-reports/index.html" ]; then
+            echo "::error::index.html not found"
+            exit 1
+          fi
+
+          CURRENT_SCORE=$(grep -oP '(?<=<td>)\d+%' core/target/pit-reports/index.html | sed -n '2p' | tr -d '%')
+          echo "score=$CURRENT_SCORE" >> $GITHUB_OUTPUT
+      - name: Compare with previous score
+        if: matrix.java-version == '21'
+        run: |
+          CURRENT_SCORE=${{ steps.current_score.outputs.score }}
+          SCORE_FILE=".github/mutation_coverage.txt"
+          
+          if [ -f "$SCORE_FILE" ]; then
+            PREVIOUS_SCORE=$(cat "$SCORE_FILE")
+          else
+            PREVIOUS_SCORE=0
+          fi
+          
+          echo "Previous mutation score: $PREVIOUS_SCORE%"
+          echo "Current mutation score: $CURRENT_SCORE%"
+          
+          if [ "$CURRENT_SCORE" -lt "$PREVIOUS_SCORE" ]; then
+            echo "Mutation score decreased"
+            exit 1
+          fi
+          
+          echo "Mutation score maintained or improved"
+      - name: Update mutation score file
+        if: matrix.java-version == '21' && success()
+        run: |
+          CURRENT_SCORE=${{ steps.current_score.outputs.score }}
+          SCORE_FILE=".github/mutation_coverage.txt"
+          echo "$CURRENT_SCORE" > "$SCORE_FILE"
+          echo "Updated mutation score file to: $CURRENT_SCORE%"
+      - name: Commit updated score
+        if: matrix.java-version == '21' && success()
+        run: |
+          SCORE_FILE=".github/mutation_coverage.txt"
+          git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' add "$SCORE_FILE"
+          git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m "Update mutation score baseline" && git push || echo "No changes to commit"
+
+      # Rickroll
+      - name: Rickroll on test failure
+        if: failure() && env.test_failed == 'true' && matrix.java-version == '21'
+        uses: ./.github/actions/rickroll
+        with:
+          percentage: 100

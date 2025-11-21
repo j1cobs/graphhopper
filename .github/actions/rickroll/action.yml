@@ -1,0 +1,17 @@
+name: 'Rickroll'
+description: 'Rickroll when tests fail'
+inputs:
+  percentage:
+    description: 'Percentage chance of rickroll'
+    required: false
+    default: '100'
+runs:
+  using: 'composite'
+  steps:
+    - name: Rickroll
+      shell: bash
+      run: |
+        echo "🎵 NEVER GONNA GIVE YOU UP 🎵"
+        timeout 10s bash -c "curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash" || true
+        echo ""
+        echo "🎵 Tests failed! You've been rickrolled! 🎵"
