@@ -36,4 +36,50 @@ jobs:
             ${{ runner.os}}-node_modules-
       - name: Build ${{ matrix.java-version }}
         run: mvn -B clean test
-
+      - name: Run mutation testing on core module
+        if: matrix.java-version == '24'
+        run: |
+          mvn -B org.pitest:pitest-maven:mutationCoverage \
+            -DtargetClasses=com.graphhopper.core.* \
+            -DtargetTests=com.graphhopper.core.* \
+            -pl core
+      - name: Extract mutation score
+        if: matrix.java-version == '24'
+        id: current_score
+        run: |
+          SCORE=$(grep -oP '(?<=<td>)\d+%' core/target/pit-reports/index.html | sed -n '2p' | tr -d '%')
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+      - name: Compare with previous score
+        if: matrix.java-version == '24'
+        run: |
+          CURRENT_SCORE=${{ steps.current_score.outputs.score }}
+          SCORE_FILE=".github/mutation-score.txt"
+          
+          if [ -f "$SCORE_FILE" ]; then
+            PREVIOUS_SCORE=$(cat "$SCORE_FILE")
+          else
+            PREVIOUS_SCORE=0
+          fi
+          
+          echo "Previous mutation score: $PREVIOUS_SCORE%"
+          echo "Current mutation score: $CURRENT_SCORE%"
+          
+          if [ "$CURRENT_SCORE" -lt "$PREVIOUS_SCORE" ]; then
+            echo "Mutation score decreased"
+            exit 1
+          fi
+          
+          echo "Mutation score maintained or improved"
+      - name: Update mutation score file
+        if: matrix.java-version == '24' && success()
+        run: |
+          CURRENT_SCORE=${{ steps.current_score.outputs.score }}
+          SCORE_FILE=".github/mutation-score.txt"
+          echo "$CURRENT_SCORE" > "$SCORE_FILE"
+          echo "Updated mutation score file to: $CURRENT_SCORE%"
+      - name: Commit updated score
+        if: matrix.java-version == '24' && success()
+        run: |
+          SCORE_FILE=".github/mutation-score.txt"
+          git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' add "$SCORE_FILE"
+          git -c user.name='github-actions[bot]' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m "Update mutation score baseline" && git push || echo "No changes to commit"
