@@ -244,6 +244,7 @@ public class GHUtilityTest {
         // 4: Invalid edge (NO_EDGE constant), return adjNode parameter
         assertEquals(10, GHUtility.getAdjNode(graph, EdgeIterator.NO_EDGE, 10),
             "NO_EDGE should return adjNode parameter 10");
+        assertEquals(10,9);
     }
 
     @Test
